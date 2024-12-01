@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with CMU Influencers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        #chatBox {
+            border: 1px solid #ccc;
+            padding: 15px;
+            height: 400px;
+            overflow-y: scroll;
+            margin-bottom: 15px;
+            background: #fff;
+        }
+        .user-message, .bot-message {
+            margin-bottom: 15px;
+        }
+        .user-message {
+            text-align: right;
+        }
+        .bot-message {
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>CMU Influencers Team</h1>
+    <div id="chatBox"></div>
+    <textarea id="userInput" rows="3" style="width: 100%;" placeholder="Type your message..."></textarea><br>
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        async function sendMessage() {
+            const userInput = document.getElementById('userInput').value;
+            if (!userInput) return;
+
+            // Append user message to chat box
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML += `<div class="user-message"><strong>You:</strong> ${userInput}</div>`;
+            document.getElementById('userInput').value = '';
+
+            // Send the message to the server
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: userInput }),
+                });
+
+                const data = await response.json();
+
+                if (data.reply) {
+                    chatBox.innerHTML += `<div class="bot-message"><strong>GPT:</strong> ${data.reply}</div>`;
+                } else if (data.error) {
+                    chatBox.innerHTML += `<div class="bot-message"><strong>GPT:</strong> ${data.error}</div>`;
+                }
+
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (error) {
+                chatBox.innerHTML += `<div class="bot-message"><strong>GPT:</strong> Error communicating with the server</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
